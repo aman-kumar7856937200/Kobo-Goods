@@ -1,0 +1,19 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# Django database
+db.sqlite3
+
+# Environment variables
+.env
+
+# Uploaded media
+media/
+
+# VS Code settings
+.vscode/
