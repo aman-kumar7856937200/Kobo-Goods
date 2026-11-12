@@ -9,6 +9,7 @@ urlpatterns = [
     # ======================================
 
     path("", views.home, name="home"),
+    path("catalogue/", views.catalogue_view, name="catalogue"),
 
     # ======================================
     # AUTHENTICATION

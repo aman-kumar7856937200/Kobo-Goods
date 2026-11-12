@@ -1425,3 +1425,105 @@ def toggle_wishlist(request, product_id):
         messages.success(request, "Product added to your wishlist.")
 
     return redirect("home")
+
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+
+def catalogue_view(request):
+    products = Product.objects.all()
+
+    search_query = request.GET.get("q", "").strip()
+    selected_brand = request.GET.get("brand", "").strip()
+    selected_category = request.GET.get("category", "").strip()
+    min_price = request.GET.get("min_price", "").strip()
+    max_price = request.GET.get("max_price", "").strip()
+    min_rating = request.GET.get("rating", "").strip()
+    sort_by = request.GET.get("sort", "newest")
+
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query)
+            | Q(brand__icontains=search_query)
+            | Q(description__icontains=search_query)
+        )
+
+    if selected_brand:
+        products = products.filter(brand__iexact=selected_brand)
+
+    if selected_category:
+        products = products.filter(category=selected_category)
+
+    if min_price:
+        try:
+            products = products.filter(price__gte=Decimal(min_price))
+        except Exception:
+            min_price = ""
+
+    if max_price:
+        try:
+            products = products.filter(price__lte=Decimal(max_price))
+        except Exception:
+            max_price = ""
+
+    if min_rating:
+        try:
+            rating_value = float(min_rating)
+            if 0 <= rating_value <= 5:
+                products = products.filter(rating__gte=rating_value)
+            else:
+                min_rating = ""
+        except ValueError:
+            min_rating = ""
+
+    sorting_options = {
+        "newest": "-created_at",
+        "price_low": "price",
+        "price_high": "-price",
+        "rating": "-rating",
+        "popular": "-review_count",
+        "name": "name",
+    }
+
+    products = products.order_by(
+        sorting_options.get(sort_by, "-created_at")
+    )
+
+    paginator = Paginator(products, 12)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    brands = Product.objects.exclude(
+        brand=""
+    ).values_list(
+        "brand", flat=True
+    ).distinct().order_by("brand")
+
+    categories = Product.objects.values_list(
+        "category", flat=True
+    ).distinct().order_by("category")
+
+    wishlist_product_ids = set()
+
+    if request.user.is_authenticated:
+        wishlist_product_ids = set(
+            WishlistItem.objects.filter(
+                user=request.user
+            ).values_list("product_id", flat=True)
+        )
+
+    return render(request, "catalogue.html", {
+        "products": page_obj,
+        "page_obj": page_obj,
+        "brands": brands,
+        "categories": categories,
+        "search_query": search_query,
+        "selected_brand": selected_brand,
+        "selected_category": selected_category,
+        "min_price": min_price,
+        "max_price": max_price,
+        "min_rating": min_rating,
+        "sort_by": sort_by,
+        "cart_count": get_cart_count(request),
+        "wishlist_product_ids": wishlist_product_ids,
+    })

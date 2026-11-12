@@ -5,10 +5,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
 
-# ==========================================
-# PRODUCT MODEL
-# ==========================================
-
 class Product(models.Model):
 
     CATEGORY_CHOICES = [
@@ -29,6 +25,13 @@ class Product(models.Model):
 
     name = models.CharField(max_length=200)
 
+    brand = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        db_index=True
+    )
+
     category = models.CharField(
         max_length=50,
         choices=CATEGORY_CHOICES,
@@ -37,10 +40,7 @@ class Product(models.Model):
 
     description = models.TextField(blank=True)
 
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     original_price = models.DecimalField(
         max_digits=10,
@@ -78,13 +78,13 @@ class Product(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        if self.brand:
+            return f"{self.brand} - {self.name}"
         return self.name
 
     @property
     def discount_percentage(self):
-
         if self.original_price > self.price and self.original_price > 0:
-
             discount = (
                 (self.original_price - self.price)
                 / self.original_price
@@ -94,10 +94,6 @@ class Product(models.Model):
 
         return 0
 
-
-# ==========================================
-# CART ITEM MODEL
-# ==========================================
 
 class CartItem(models.Model):
 
@@ -135,10 +131,6 @@ class CartItem(models.Model):
         return self.product.price * self.quantity
 
 
-# ==========================================
-# WISHLIST ITEM MODEL
-# ==========================================
-
 class WishlistItem(models.Model):
 
     user = models.ForeignKey(
@@ -168,10 +160,6 @@ class WishlistItem(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
 
-
-# ==========================================
-# ORDER MODEL
-# ==========================================
 
 class Order(models.Model):
 
@@ -210,23 +198,14 @@ class Order(models.Model):
     )
 
     full_name = models.CharField(max_length=150)
-
     email = models.EmailField()
-
     phone = models.CharField(max_length=15)
-
     address = models.TextField()
-
     city = models.CharField(max_length=100)
-
     state = models.CharField(max_length=100)
-
     postal_code = models.CharField(max_length=10)
 
-    subtotal = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
-    )
+    subtotal = models.DecimalField(max_digits=12, decimal_places=2)
 
     delivery_charge = models.DecimalField(
         max_digits=10,
@@ -234,10 +213,7 @@ class Order(models.Model):
         default=0
     )
 
-    total_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
-    )
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
 
     payment_method = models.CharField(
         max_length=30,
@@ -259,13 +235,9 @@ class Order(models.Model):
 
     cancellation_reason = models.TextField(blank=True)
 
-    cancelled_at = models.DateTimeField(
-        null=True,
-        blank=True
-    )
+    cancelled_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -274,10 +246,6 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.order_number} - {self.user.username}"
 
-
-# ==========================================
-# ORDER ITEM MODEL
-# ==========================================
 
 class OrderItem(models.Model):
 
@@ -297,10 +265,7 @@ class OrderItem(models.Model):
 
     product_name = models.CharField(max_length=200)
 
-    product_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
+    product_price = models.DecimalField(max_digits=10, decimal_places=2)
 
     quantity = models.PositiveIntegerField(default=1)
 
@@ -311,10 +276,6 @@ class OrderItem(models.Model):
     def subtotal(self):
         return self.product_price * self.quantity
 
-
-# ==========================================
-# ORDER STATUS HISTORY MODEL
-# ==========================================
 
 class OrderStatusHistory(models.Model):
 
@@ -329,10 +290,7 @@ class OrderStatusHistory(models.Model):
         choices=Order.ORDER_STATUS_CHOICES
     )
 
-    note = models.CharField(
-        max_length=255,
-        blank=True
-    )
+    note = models.CharField(max_length=255, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -342,10 +300,6 @@ class OrderStatusHistory(models.Model):
     def __str__(self):
         return f"{self.order.order_number} - {self.status}"
 
-
-# ==========================================
-# PRODUCT REVIEW MODEL
-# ==========================================
 
 class ProductReview(models.Model):
 
@@ -373,7 +327,6 @@ class ProductReview(models.Model):
     comment = models.TextField(max_length=1000)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

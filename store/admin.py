@@ -11,15 +11,12 @@ from .models import (
 )
 
 
-# ==========================================
-# PRODUCT ADMIN
-# ==========================================
-
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
 
     list_display = (
         "name",
+        "brand",
         "category",
         "price",
         "original_price",
@@ -29,21 +26,28 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
+        "brand",
         "category",
         "is_featured",
         "badge",
     )
 
-    search_fields = ("name", "description")
+    search_fields = (
+        "name",
+        "brand",
+        "description",
+    )
 
-    list_editable = ("price", "stock", "is_featured")
+    list_editable = (
+        "price",
+        "stock",
+        "is_featured",
+    )
 
     readonly_fields = ("created_at",)
 
+    ordering = ("brand", "name")
 
-# ==========================================
-# CART ITEM ADMIN
-# ==========================================
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
@@ -58,16 +62,13 @@ class CartItemAdmin(admin.ModelAdmin):
     search_fields = (
         "user__username",
         "product__name",
+        "product__brand",
     )
 
     list_filter = ("added_at",)
 
     readonly_fields = ("added_at",)
 
-
-# ==========================================
-# ORDER ITEM INLINE
-# ==========================================
 
 class OrderItemInline(admin.TabularInline):
 
@@ -98,10 +99,6 @@ class OrderItemInline(admin.TabularInline):
         return False
 
 
-# ==========================================
-# ORDER STATUS HISTORY INLINE
-# ==========================================
-
 class OrderStatusHistoryInline(admin.TabularInline):
 
     model = OrderStatusHistory
@@ -123,10 +120,6 @@ class OrderStatusHistoryInline(admin.TabularInline):
     def has_add_permission(self, request, obj=None):
         return False
 
-
-# ==========================================
-# ORDER ADMIN
-# ==========================================
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -157,8 +150,6 @@ class OrderAdmin(admin.ModelAdmin):
         "user__username",
     )
 
-    # Status is changed on the order detail page,
-    # so that every change can be recorded.
     list_editable = ()
 
     readonly_fields = (
@@ -238,8 +229,6 @@ class OrderAdmin(admin.ModelAdmin):
             old_order = Order.objects.get(pk=obj.pk)
             old_status = old_order.status
 
-        # Do not allow admin to cancel an order directly.
-        # Customer cancellation uses the stock-restoration workflow.
         if (
             change
             and old_status != "Cancelled"
@@ -264,10 +253,6 @@ class OrderAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-
-# ==========================================
-# ORDER STATUS HISTORY ADMIN
-# ==========================================
 
 @admin.register(OrderStatusHistory)
 class OrderStatusHistoryAdmin(admin.ModelAdmin):

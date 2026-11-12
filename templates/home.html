@@ -102,6 +102,7 @@
         Free delivery on orders above ₹999 | Welcome to Kobo Goods!
     </div>
 
+
     <header class="main-header">
 
         <div class="logo">
@@ -114,6 +115,10 @@
         </div>
 
         <div class="header-links">
+
+            <a href="{% url 'home' %}">Home</a>
+
+            <a href="{% url 'catalogue' %}">All Products</a>
 
             <details class="account-dropdown">
                 <summary>
@@ -153,8 +158,6 @@
                 </div>
             </details>
 
-            <a href="#products">Products</a>
-
             {% if user.is_authenticated %}
             <a href="{% url 'wishlist' %}" class="wishlist-header-link">
                 ♥ Wishlist
@@ -170,11 +173,13 @@
 
     <nav class="navbar">
         <a href="#categories">All Categories</a>
-        <a href="#products">Mobiles</a>
-        <a href="#products">Laptops</a>
-        <a href="#products">Headphones</a>
-        <a href="#products">Smart Watches</a>
-        <a href="#products">Accessories</a>
+        <a href="{% url 'catalogue' %}">All Products</a>
+        <a href="{% url 'catalogue' %}?category=Mobiles">Mobiles</a>
+        <a href="{% url 'catalogue' %}?category=Laptops">Laptops</a>
+        <a href="{% url 'catalogue' %}?category=Headphones">Headphones</a>
+        <a href="{% url 'catalogue' %}?category=Smart Watches">Smart Watches</a>
+        <a href="{% url 'catalogue' %}?category=Accessories">Accessories</a>
+    </nav>
     </nav>
 
     {% if messages %}
@@ -301,10 +306,13 @@
                         </a>
                     </h3>
 
-                    {% if product.rating > 0 %}
+                    {% if product.review_count > 0 %}
                     <p class="rating">
-                        ⭐ {{ product.rating }}/5
-                        <span>({{ product.review_count }} reviews)</span>
+                        ⭐ {{ product.rating|floatformat:1 }}/5
+                        <span>
+                            ({{ product.review_count }}
+                            {% if product.review_count == 1 %}review{% else %}reviews{% endif %})
+                        </span>
                     </p>
                     {% else %}
                     <p class="product-category">No reviews yet</p>
@@ -376,6 +384,7 @@
             <div>
                 <h3>Quick Links</h3>
                 <a href="/">Home</a>
+                <a href="{% url 'catalogue' %}">All Products</a>
                 <a href="#categories">Categories</a>
                 <a href="#products">Products</a>
                 {% if user.is_authenticated %}

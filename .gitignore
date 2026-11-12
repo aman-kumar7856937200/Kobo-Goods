@@ -1,19 +1,11 @@
 
-# Python cache
 __pycache__/
 *.py[cod]
-
-# Virtual environment
 venv/
-
-# Django database
 db.sqlite3
-
-# Environment variables
-.env
-
-# Uploaded media
+db_backup_before_deployment.sqlite3
 media/
-
-# VS Code settings
+media_backup_before_deployment/
+.env
 .vscode/
+staticfiles/
