@@ -1,0 +1,136 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Payment | Kobo Goods</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .payment-container {
+            max-width: 500px;
+            margin: 70px auto;
+            padding: 30px 20px;
+        }
+
+        .payment-card {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,.09);
+            text-align: center;
+        }
+
+        .payment-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .payment-card h1 {
+            color: #172337;
+            margin-bottom: 12px;
+        }
+
+        .payment-card p {
+            color: #777;
+            line-height: 1.6;
+        }
+
+        .payment-amount {
+            font-size: 30px;
+            font-weight: bold;
+            color: #172337;
+            margin: 25px 0;
+        }
+
+        .payment-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .success-button {
+            background: #16834a;
+            color: white;
+        }
+
+        .failure-button {
+            background: #f1f2f4;
+            color: #172337;
+        }
+
+        .payment-button:hover {
+            opacity: .88;
+        }
+
+        .demo-note {
+            background: #fff7e8;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="payment-container">
+
+    <div class="payment-card">
+
+        <div class="payment-icon">💳</div>
+
+        <h1>Demo Payment Gateway</h1>
+
+        <p>Complete your test payment for Kobo Goods.</p>
+
+        <div class="payment-amount">
+            ₹{{ order.total_amount|floatformat:2 }}
+        </div>
+
+        <p>
+            Order ID:
+            <strong>{{ order.order_number }}</strong>
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                name="payment_action"
+                value="success"
+                class="payment-button success-button"
+            >
+                ✓ Simulate Successful Payment
+            </button>
+
+            <button
+                type="submit"
+                name="payment_action"
+                value="failure"
+                class="payment-button failure-button"
+            >
+                ✕ Simulate Failed Payment
+            </button>
+        </form>
+
+        <div class="demo-note">
+            This is a simulated payment gateway for the Kobo Goods
+            project. No real payment or transaction will take place.
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

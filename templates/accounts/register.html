@@ -1,0 +1,187 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Kobo Goods</title>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f5f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,.09);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 27px;
+            font-weight: bold;
+            color: #172337;
+            margin-bottom: 25px;
+        }
+
+        .logo span { color: #ff9900; }
+
+        h1 {
+            font-size: 25px;
+            color: #172337;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            margin: 17px 0 7px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff9900;
+        }
+
+        .helptext {
+            display: block;
+            color: #777;
+            font-size: 12px;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        ul.errorlist {
+            color: #c62828;
+            font-size: 13px;
+            padding-left: 20px;
+            margin-top: 7px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            margin-top: 25px;
+            border: none;
+            background: #ff9900;
+            color: #172337;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover { background: #e68a00; }
+
+        .bottom-link {
+            text-align: center;
+            margin-top: 22px;
+            color: #666;
+        }
+
+        .bottom-link a {
+            color: #172337;
+            font-weight: bold;
+        }
+
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 18px;
+            color: #666;
+        }
+
+        .messages {
+            background: #e8f5e9;
+            color: #256b35;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-card">
+
+        <div class="logo">KOBO<span>GOODS</span></div>
+
+        <h1>Create your account</h1>
+        <p class="subtitle">
+            Join Kobo Goods and discover your favourite electronics.
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="messages">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {{ form.non_field_errors }}
+
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {{ form.username.errors }}
+            <small class="helptext">
+                Choose a username to use when logging in.
+            </small>
+
+            <label for="{{ form.password1.id_for_label }}">Password</label>
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+            <small class="helptext">
+                Use a strong password that you have not used elsewhere.
+            </small>
+
+            <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+
+            <button type="submit" class="submit-btn">
+                Create Account
+            </button>
+        </form>
+
+        <p class="bottom-link">
+            Already have an account?
+            <a href="{% url 'login' %}">Login</a>
+        </p>
+
+        <a href="{% url 'home' %}" class="home-link">
+            ← Back to Home
+        </a>
+
+    </div>
+</body>
+</html>

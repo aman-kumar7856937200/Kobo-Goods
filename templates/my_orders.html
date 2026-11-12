@@ -1,0 +1,579 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | Kobo Goods</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .orders-container {
+            max-width: 1100px;
+            margin: 45px auto;
+            padding: 0 20px 40px;
+        }
+
+        .orders-heading {
+            margin-bottom: 25px;
+        }
+
+        .orders-heading h1 {
+            color: #172337;
+            margin-bottom: 7px;
+            font-size: 28px;
+        }
+
+        .orders-heading p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Search and filter */
+        .order-tools {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .order-search {
+            flex: 1;
+            min-width: 220px;
+            padding: 13px 15px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .order-search:focus,
+        .order-filter:focus {
+            border-color: #ff9900;
+            box-shadow: 0 0 0 2px rgba(255,153,0,.12);
+        }
+
+        .order-filter {
+            min-width: 175px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            background: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        /* Order card */
+        .order-card {
+            background: white;
+            padding: 23px;
+            border-radius: 11px;
+            box-shadow: 0 3px 14px rgba(0,0,0,.07);
+            margin-bottom: 22px;
+            border: 1px solid #eee;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,.09);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 16px;
+            margin-bottom: 14px;
+        }
+
+        .order-header h3 {
+            color: #172337;
+            font-size: 16px;
+            margin-bottom: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .order-date {
+            color: #777;
+            font-size: 13px;
+        }
+
+        /* Status badges */
+        .order-status {
+            display: inline-block;
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            color: #946200;
+            background: #fff3cd;
+        }
+
+        .status-confirmed {
+            color: #075c9c;
+            background: #e3f2fd;
+        }
+
+        .status-processing {
+            color: #6542a6;
+            background: #f0eaff;
+        }
+
+        .status-shipped {
+            color: #087c82;
+            background: #e0f7f7;
+        }
+
+        .status-delivered {
+            color: #16834a;
+            background: #e3f7eb;
+        }
+
+        .status-cancelled {
+            color: #b42318;
+            background: #fde8e7;
+        }
+
+        /* Product rows */
+        .order-product {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .order-product strong {
+            color: #172337;
+            white-space: nowrap;
+        }
+
+        /* Progress tracker */
+        .order-progress {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin: 25px 5px 22px;
+            position: relative;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .progress-step:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            height: 3px;
+            background: #e5e5e5;
+            width: 100%;
+            top: 12px;
+            left: 50%;
+            z-index: -1;
+        }
+
+        .progress-step.completed:not(:last-child)::after {
+            background: #16834a;
+        }
+
+        .progress-dot {
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 7px;
+            border-radius: 50%;
+            background: #e5e5e5;
+            color: #777;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        .progress-step.completed .progress-dot {
+            background: #16834a;
+            color: white;
+        }
+
+        .progress-step span {
+            font-size: 11px;
+            color: #777;
+        }
+
+        .progress-step.completed span {
+            color: #16834a;
+            font-weight: bold;
+        }
+
+        .cancelled-progress {
+            background: #fff1f0;
+            color: #b42318;
+            padding: 11px 14px;
+            border-radius: 7px;
+            font-size: 13px;
+            margin: 18px 0;
+        }
+
+        /* Footer */
+        .order-footer {
+            border-top: 1px solid #eee;
+            margin-top: 12px;
+            padding-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .payment-info {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .order-total {
+            color: #172337;
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .order-footer a {
+            color: #d66c00;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .order-footer a:hover {
+            color: #ff9900;
+            text-decoration: underline;
+        }
+
+        .no-results,
+        .empty-orders {
+            background: white;
+            text-align: center;
+            padding: 45px 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .empty-orders h2,
+        .no-results h3 {
+            color: #172337;
+            margin-bottom: 10px;
+        }
+
+        .empty-orders p,
+        .no-results p {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .empty-orders a,
+        .shop-button {
+            display: inline-block;
+            background: #ff9900;
+            color: #172337;
+            padding: 12px 25px;
+            border-radius: 6px;
+            margin-top: 18px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .empty-orders a:hover,
+        .shop-button:hover {
+            background: #e88b00;
+        }
+
+        .no-results {
+            display: none;
+        }
+
+        @media(max-width: 600px) {
+            .orders-container {
+                margin: 25px auto;
+                padding: 0 13px 30px;
+            }
+
+            .orders-heading h1 {
+                font-size: 24px;
+            }
+
+            .order-card {
+                padding: 17px;
+            }
+
+            .order-tools {
+                flex-direction: column;
+            }
+
+            .order-search,
+            .order-filter {
+                width: 100%;
+            }
+
+            .order-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .order-progress {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .progress-step span {
+                font-size: 9px;
+            }
+
+            .progress-dot {
+                width: 22px;
+                height: 22px;
+                font-size: 10px;
+            }
+
+            .order-header h3 {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="orders-container">
+
+    <div class="orders-heading">
+        <h1>My Orders</h1>
+        <p>Track your purchases and manage your orders.</p>
+    </div>
+
+    {% if orders %}
+
+    <div class="order-tools">
+
+        <input
+            type="search"
+            id="orderSearch"
+            class="order-search"
+            placeholder="Search by order ID or product name..."
+            aria-label="Search orders"
+        >
+
+        <select id="orderFilter" class="order-filter" aria-label="Filter orders">
+            <option value="all">All Orders</option>
+            <option value="active">Active Orders</option>
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+        </select>
+
+    </div>
+
+    <div id="orderList">
+
+        {% for order in orders %}
+
+        <div
+            class="order-card"
+            data-status="{{ order.status|lower }}"
+            data-search="{{ order.order_number }} {% for item in order.items.all %}{{ item.product_name }} {% endfor %}"
+        >
+
+            <div class="order-header">
+
+                <div>
+                    <h3>Order #{{ order.order_number }}</h3>
+                    <span class="order-date">
+                        {{ order.created_at|date:"d M Y, h:i A" }}
+                    </span>
+                </div>
+
+                <span class="order-status
+                    {% if order.status == 'Pending' %}status-pending
+                    {% elif order.status == 'Confirmed' %}status-confirmed
+                    {% elif order.status == 'Processing' %}status-processing
+                    {% elif order.status == 'Shipped' %}status-shipped
+                    {% elif order.status == 'Delivered' %}status-delivered
+                    {% elif order.status == 'Cancelled' %}status-cancelled
+                    {% endif %}">
+                    {{ order.status }}
+                </span>
+
+            </div>
+
+            {% for item in order.items.all %}
+
+            <div class="order-product">
+                <span>
+                    {{ item.product_name }} × {{ item.quantity }}
+                </span>
+
+                <strong>
+                    ₹{{ item.subtotal|floatformat:2 }}
+                </strong>
+            </div>
+
+            {% endfor %}
+
+            {% if order.status == 'Cancelled' %}
+
+                <div class="cancelled-progress">
+                    This order has been cancelled.
+                    {% if order.cancelled_at %}
+                        Cancellation date:
+                        {{ order.cancelled_at|date:"d M Y, h:i A" }}
+                    {% endif %}
+                </div>
+
+            {% else %}
+
+                <div class="order-progress">
+
+                    <div class="progress-step
+                        {% if order.status == 'Pending' or order.status == 'Confirmed' or order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %}completed{% endif %}">
+                        <div class="progress-dot">1</div>
+                        <span>Placed</span>
+                    </div>
+
+                    <div class="progress-step
+                        {% if order.status == 'Confirmed' or order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %}completed{% endif %}">
+                        <div class="progress-dot">2</div>
+                        <span>Confirmed</span>
+                    </div>
+
+                    <div class="progress-step
+                        {% if order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %}completed{% endif %}">
+                        <div class="progress-dot">3</div>
+                        <span>Processing</span>
+                    </div>
+
+                    <div class="progress-step
+                        {% if order.status == 'Shipped' or order.status == 'Delivered' %}completed{% endif %}">
+                        <div class="progress-dot">4</div>
+                        <span>Shipped</span>
+                    </div>
+
+                    <div class="progress-step
+                        {% if order.status == 'Delivered' %}completed{% endif %}">
+                        <div class="progress-dot">5</div>
+                        <span>Delivered</span>
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+            <div class="order-footer">
+
+                <span class="payment-info">
+                    Payment: {{ order.payment_status }}
+                </span>
+
+                <strong class="order-total">
+                    ₹{{ order.total_amount|floatformat:2 }}
+                </strong>
+
+                <a href="{% url 'order_detail' order.order_number %}">
+                    View Details →
+                </a>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="no-results" id="noResults">
+        <h3>No matching orders found</h3>
+        <p>Try another search term or change the status filter.</p>
+    </div>
+
+    {% else %}
+
+    <div class="empty-orders">
+        <h2>You haven't placed any orders yet.</h2>
+        <p>Explore our products and find something you love.</p>
+
+        <a href="{% url 'home' %}">
+            Start Shopping
+        </a>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+    const searchInput = document.getElementById("orderSearch");
+    const filterSelect = document.getElementById("orderFilter");
+    const orderCards = document.querySelectorAll(".order-card");
+    const noResults = document.getElementById("noResults");
+
+    function filterOrders() {
+        if (!searchInput || !filterSelect) return;
+
+        const searchText = searchInput.value.toLowerCase().trim();
+        const selectedFilter = filterSelect.value;
+
+        let visibleCount = 0;
+
+        orderCards.forEach(card => {
+            const status = card.dataset.status;
+            const searchData = card.dataset.search.toLowerCase();
+
+            const matchesSearch = searchData.includes(searchText);
+
+            let matchesFilter = true;
+
+            if (selectedFilter === "active") {
+                matchesFilter = [
+                    "pending",
+                    "confirmed",
+                    "processing",
+                    "shipped"
+                ].includes(status);
+            } else if (selectedFilter !== "all") {
+                matchesFilter = status === selectedFilter;
+            }
+
+            const visible = matchesSearch && matchesFilter;
+
+            card.style.display = visible ? "block" : "none";
+
+            if (visible) visibleCount++;
+        });
+
+        noResults.style.display =
+            visibleCount === 0 ? "block" : "none";
+    }
+
+    if (searchInput && filterSelect) {
+        searchInput.addEventListener("input", filterOrders);
+        filterSelect.addEventListener("change", filterOrders);
+    }
+</script>
+
+</body>
+</html>

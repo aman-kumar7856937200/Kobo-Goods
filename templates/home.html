@@ -1,22 +1,338 @@
 
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kobo Goods | Electronics & Gadgets</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-    <title>Kobo Goods | Online Electronics Store</title>
+    <style>
+        .product-detail-link {
+            display: inline-block;
+            margin: 10px 0;
+            color: #0875c9;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .product-detail-link:hover {
+            color: #e47911;
+            text-decoration: underline;
+        }
+
+        .product-image a {
+            display: block;
+        }
+
+        .product-info h3 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .product-info h3 a:hover {
+            color: #e47911;
+        }
+    </style>
 </head>
-
 <body>
 
-    <h1>Welcome to Kobo Goods!</h1>
+    <div class="announcement">
+        Free delivery on orders above ₹999 | Welcome to Kobo Goods!
+    </div>
 
-    <p>Everything Tech. Everything You Need.</p>
+    <header class="main-header">
 
-    <h2>Your Online Shopping Experience Starts Here.</h2>
+        <div class="logo">
+            <a href="/">KOBO<span>GOODS</span></a>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput"
+                   placeholder="Search electronics, gadgets and more...">
+            <button id="searchButton">Search</button>
+        </div>
+
+        <div class="header-links">
+
+            <details class="account-dropdown">
+                <summary>
+                    {% if user.is_authenticated %}
+                        My Account
+                    {% else %}
+                        Account
+                    {% endif %}
+                </summary>
+
+                <div class="account-menu">
+                    {% if user.is_authenticated %}
+
+                        <div class="account-menu-title">
+                            <span class="greeting-label">Hello,</span>
+                            <strong>{{ user.username }}!</strong>
+                        </div>
+
+                        <a href="{% url 'profile' %}">👤 My Profile</a>
+                        <a href="{% url 'my_orders' %}">📦 My Orders</a>
+
+                        <form method="POST" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit">↪ Logout</button>
+                        </form>
+
+                    {% else %}
+
+                        <div class="account-menu-title">
+                            Welcome to Kobo Goods!
+                        </div>
+
+                        <a href="{% url 'login' %}">🔐 Customer Login</a>
+                        <a href="{% url 'register' %}">✚ Create Account</a>
+
+                    {% endif %}
+                </div>
+            </details>
+
+            <a href="#products">Products</a>
+
+            <a href="{% url 'cart' %}">
+                Cart (<span id="cartCount">{{ cart_count }}</span>)
+            </a>
+
+        </div>
+    </header>
+
+    <nav class="navbar">
+        <a href="#categories">All Categories</a>
+        <a href="#products">Mobiles</a>
+        <a href="#products">Laptops</a>
+        <a href="#products">Headphones</a>
+        <a href="#products">Smart Watches</a>
+        <a href="#products">Accessories</a>
+    </nav>
+
+    {% if messages %}
+        <div class="site-messages">
+            {% for message in messages %}
+                <p class="message {{ message.tags }}">
+                    <span class="message-icon">✓</span>
+                    {{ message }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- HERO SECTION -->
+
+    <section class="hero">
+        <div class="hero-content">
+            <p class="hero-tag">UPGRADE YOUR TECH</p>
+            <h1>Discover Technology<br>That Moves You.</h1>
+            <p>Explore the latest electronics and gadgets at prices you'll love.</p>
+            <a href="#products" class="shop-btn">Shop Now</a>
+        </div>
+
+        <div class="hero-image">
+            <img
+                src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=900"
+                alt="Electronics and gadgets">
+        </div>
+    </section>
+
+    <!-- BENEFITS SECTION -->
+
+    <section class="benefits">
+        <div>🚚 <strong>Free Delivery</strong><br>On orders above ₹999</div>
+        <div>🔒 <strong>Secure Shopping</strong><br>Safe checkout experience</div>
+        <div>⭐ <strong>Quality Products</strong><br>Technology you can trust</div>
+        <div>💬 <strong>Customer Support</strong><br>We're here to help</div>
+    </section>
+
+    <!-- CATEGORY SECTION -->
+
+    <section class="section" id="categories">
+        <div class="section-heading">
+            <h2>Shop By Category</h2>
+            <p>Find the right technology for your lifestyle.</p>
+        </div>
+
+        <div class="category-grid">
+
+            <a href="#products" class="category-card">
+                <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500" alt="Smartphones">
+                <h3>Smartphones</h3>
+            </a>
+
+            <a href="#products" class="category-card">
+                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500" alt="Laptops">
+                <h3>Laptops</h3>
+            </a>
+
+            <a href="#products" class="category-card">
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500" alt="Headphones">
+                <h3>Headphones</h3>
+            </a>
+
+            <a href="#products" class="category-card">
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" alt="Smart Watches">
+                <h3>Smart Watches</h3>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- FEATURED PRODUCTS SECTION -->
+
+    <section class="section products-section" id="products">
+
+        <div class="section-heading">
+            <h2>Featured Products</h2>
+            <p>Explore our latest electronics and gadgets.</p>
+        </div>
+
+        <div class="product-grid">
+
+            {% for product in products %}
+
+                <div class="product-card" data-name="{{ product.name|lower }}">
+
+                    <div class="product-image">
+
+                        {% if product.badge %}
+                            <span class="product-badge {% if product.badge == 'NEW' %}new-badge{% endif %}">
+                                {{ product.get_badge_display }}
+                            </span>
+                        {% endif %}
+
+                        <a href="{% url 'product_detail' product.id %}">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500" alt="{{ product.name }}">
+                            {% endif %}
+                        </a>
+
+                    </div>
+
+                    <div class="product-info">
+
+                        <p class="product-category">
+                            {{ product.get_category_display }}
+                        </p>
+
+                        <h3>
+                            <a href="{% url 'product_detail' product.id %}">
+                                {{ product.name }}
+                            </a>
+                        </h3>
+
+                        {% if product.rating > 0 %}
+                            <p class="rating">
+                                ⭐ {{ product.rating }}/5
+                                <span>({{ product.review_count }} reviews)</span>
+                            </p>
+                        {% else %}
+                            <p class="product-category">No reviews yet</p>
+                        {% endif %}
+
+                        <div class="price-row">
+                            <span class="price">₹{{ product.price }}</span>
+
+                            {% if product.discount_percentage > 0 %}
+                                <span class="old-price">₹{{ product.original_price }}</span>
+                                <span class="discount">{{ product.discount_percentage }}% OFF</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- PRODUCT DETAILS LINK -->
+
+                        <a
+                            href="{% url 'product_detail' product.id %}"
+                            class="product-detail-link"
+                        >
+                            View Details & Reviews →
+                        </a>
+
+                        <!-- ADD TO CART -->
+
+                        {% if product.stock > 0 %}
+
+                            <form method="POST" action="{% url 'add_to_cart' product.id %}">
+                                {% csrf_token %}
+
+                                <button type="submit" class="add-cart">
+                                    Add to Cart
+                                </button>
+                            </form>
+
+                        {% else %}
+
+                            <button class="add-cart" disabled>
+                                Out of Stock
+                            </button>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            {% empty %}
+
+                <div class="empty-products">
+                    <h3>No products available yet.</h3>
+                    <p>Products added through Django Admin will appear here.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+    </section>
+
+    <!-- PROMO BANNER -->
+
+    <section class="promo-banner">
+        <div>
+            <h2>Technology Made Affordable.</h2>
+            <p>Find your next favourite gadget at Kobo Goods.</p>
+            <a href="#products" class="shop-btn">Explore Products</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+        <div class="footer-content">
+
+            <div>
+                <h2>KOBO<span>GOODS</span></h2>
+                <p>Your destination for electronics and gadgets.</p>
+            </div>
+
+            <div>
+                <h3>Quick Links</h3>
+                <a href="/">Home</a>
+                <a href="#categories">Categories</a>
+                <a href="#products">Products</a>
+            </div>
+
+            <div>
+                <h3>Customer Service</h3>
+                <a href="#">Contact Us</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms & Conditions</a>
+            </div>
+
+        </div>
+
+        <div class="copyright">
+            © 2026 Kobo Goods. All rights reserved.
+        </div>
+
+    </footer>
+
+    <script src="{% static 'js/script.js' %}"></script>
 
 </body>
-
 </html>

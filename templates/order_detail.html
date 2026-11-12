@@ -1,0 +1,629 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Order Tracking | Kobo Goods</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .detail-container {
+            max-width: 900px;
+            margin: 45px auto;
+            padding: 0 20px 50px;
+        }
+
+        .detail-card {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0,0,0,.07);
+            margin-bottom: 22px;
+        }
+
+        .detail-card h2 {
+            color: #172337;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .detail-header h1 {
+            color: #172337;
+            font-size: 26px;
+            overflow-wrap: anywhere;
+        }
+
+        .detail-header p {
+            color: #777;
+            margin-top: 9px;
+            font-size: 13px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: #e6f5eb;
+            color: #16834a;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .tracking-subtitle {
+            color: #777;
+            font-size: 14px;
+            margin: -10px 0 30px;
+        }
+
+        .tracking-step {
+            position: relative;
+            display: flex;
+            gap: 18px;
+            min-height: 95px;
+        }
+
+        .tracking-marker {
+            position: relative;
+            width: 28px;
+            min-width: 28px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tracking-marker::before {
+            content: "";
+            position: absolute;
+            top: 27px;
+            bottom: -1px;
+            width: 3px;
+            background: #e1e5eb;
+        }
+
+        .tracking-step:last-child .tracking-marker::before {
+            display: none;
+        }
+
+        .tracking-dot {
+            position: relative;
+            z-index: 1;
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            background: #e1e5eb;
+            color: #777;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .tracking-step.completed .tracking-dot {
+            background: #16834a;
+            color: white;
+        }
+
+        .tracking-step.completed .tracking-marker::before {
+            background: #16834a;
+        }
+
+        .tracking-step.current .tracking-dot {
+            background: #ff9900;
+            color: #172337;
+        }
+
+        .tracking-info {
+            padding: 2px 0 25px;
+        }
+
+        .tracking-info h3 {
+            color: #a0a0a0;
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .tracking-step.completed .tracking-info h3 {
+            color: #16834a;
+        }
+
+        .tracking-step.current .tracking-info h3 {
+            color: #172337;
+        }
+
+        .tracking-info p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .history-entry {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .history-entry:last-child {
+            border-bottom: none;
+        }
+
+        .history-entry strong {
+            color: #172337;
+        }
+
+        .history-entry p {
+            color: #777;
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .history-entry time {
+            display: block;
+            color: #999;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 13px 0;
+            border-bottom: 1px solid #eee;
+            line-height: 1.5;
+        }
+
+        .detail-row span {
+            color: #666;
+        }
+
+        .detail-row strong {
+            color: #172337;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .address-text {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .detail-total {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .cancel-box {
+            border: 1px solid #f0cccc;
+            background: #fff8f8;
+        }
+
+        .cancel-box h2 {
+            color: #b42318;
+        }
+
+        .cancel-box p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .cancel-box textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+
+        .cancel-button {
+            padding: 12px 20px;
+            background: #d93025;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .cancel-button:hover {
+            background: #b42318;
+        }
+
+        .cancelled-notice {
+            padding: 17px;
+            background: #fff0f0;
+            border: 1px solid #f3cccc;
+            border-left: 4px solid #d93025;
+            border-radius: 7px;
+            color: #b42318;
+            line-height: 1.7;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .detail-actions a {
+            display: inline-block;
+            background: #ff9900;
+            color: #172337;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .detail-actions a.secondary {
+            background: #172337;
+            color: white;
+        }
+
+        .site-messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 13px;
+            border-radius: 6px;
+            background: #eaf7ef;
+            color: #176b3a;
+            margin-bottom: 8px;
+        }
+
+        .message.error {
+            background: #fff0f0;
+            color: #b42318;
+        }
+
+        @media(max-width: 520px) {
+            .detail-card {
+                padding: 20px;
+            }
+
+            .detail-header h1 {
+                font-size: 22px;
+            }
+
+            .detail-row {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="detail-container">
+
+    {% if messages %}
+        <div class="site-messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- ORDER HEADER -->
+
+    <div class="detail-card">
+
+        <div class="detail-header">
+            <div>
+                <h1>Order Details</h1>
+                <p>Order #{{ order.order_number }}</p>
+            </div>
+
+            <span class="status">{{ order.status }}</span>
+        </div>
+
+        <p style="color:#777;margin-top:15px;">
+            Placed on {{ order.created_at|date:"d M Y, h:i A" }}
+        </p>
+
+    </div>
+
+
+    <!-- TRACKING TIMELINE -->
+
+    <div class="detail-card">
+
+        <h2>Track Your Order</h2>
+
+        <p class="tracking-subtitle">
+            Follow the progress of your Kobo Goods order.
+        </p>
+
+        {% if order.status == "Cancelled" %}
+
+            <div class="cancelled-notice">
+                <strong>Order Cancelled</strong><br>
+                Cancelled on:
+                {{ order.cancelled_at|date:"d M Y, h:i A" }}<br>
+
+                <strong>Reason:</strong>
+                {{ order.cancellation_reason }}
+            </div>
+
+        {% else %}
+
+            {% with current=order.status %}
+
+            <div class="tracking-step completed">
+                <div class="tracking-marker">
+                    <div class="tracking-dot">✓</div>
+                </div>
+                <div class="tracking-info">
+                    <h3>Order Placed</h3>
+                    <p>Your order was successfully received.</p>
+                    <p>{{ order.created_at|date:"d M Y, h:i A" }}</p>
+                </div>
+            </div>
+
+            <div class="tracking-step
+                {% if current == 'Confirmed' or current == 'Processing' or current == 'Shipped' or current == 'Delivered' %}
+                    completed
+                {% elif current == 'Pending' %}
+                    current
+                {% endif %}">
+
+                <div class="tracking-marker">
+                    <div class="tracking-dot">2</div>
+                </div>
+
+                <div class="tracking-info">
+                    <h3>Order Confirmed</h3>
+                    <p>Your order has been confirmed.</p>
+                </div>
+            </div>
+
+            <div class="tracking-step
+                {% if current == 'Processing' or current == 'Shipped' or current == 'Delivered' %}
+                    completed
+                {% endif %}
+                {% if current == 'Processing' %}current{% endif %}">
+
+                <div class="tracking-marker">
+                    <div class="tracking-dot">3</div>
+                </div>
+
+                <div class="tracking-info">
+                    <h3>Processing</h3>
+                    <p>Your products are being prepared.</p>
+                </div>
+            </div>
+
+            <div class="tracking-step
+                {% if current == 'Shipped' or current == 'Delivered' %}
+                    completed
+                {% endif %}
+                {% if current == 'Shipped' %}current{% endif %}">
+
+                <div class="tracking-marker">
+                    <div class="tracking-dot">4</div>
+                </div>
+
+                <div class="tracking-info">
+                    <h3>Shipped</h3>
+                    <p>Your order is on its way.</p>
+                </div>
+            </div>
+
+            <div class="tracking-step
+                {% if current == 'Delivered' %}
+                    completed current
+                {% endif %}">
+
+                <div class="tracking-marker">
+                    <div class="tracking-dot">5</div>
+                </div>
+
+                <div class="tracking-info">
+                    <h3>Delivered</h3>
+                    <p>Your order has been delivered.</p>
+                </div>
+            </div>
+
+            {% endwith %}
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ACTUAL STATUS HISTORY -->
+
+    <div class="detail-card">
+
+        <h2>Order Status History</h2>
+
+        {% for history in order.status_history.all %}
+
+            <div class="history-entry">
+                <strong>{{ history.status }}</strong>
+
+                {% if history.note %}
+                    <p>{{ history.note }}</p>
+                {% endif %}
+
+                <time>
+                    {{ history.created_at|date:"d M Y, h:i A" }}
+                </time>
+            </div>
+
+        {% empty %}
+
+            <p style="color:#777;">
+                No status history is available for this order yet.
+            </p>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- CANCELLATION OPTION -->
+
+    {% if can_cancel %}
+
+        <div class="detail-card cancel-box">
+
+            <h2>Cancel This Order</h2>
+
+            <p>
+                You can cancel this order before it is shipped.
+                If you have already completed a demo payment,
+                the payment will be marked as Refund Pending.
+            </p>
+
+            <form
+                method="POST"
+                action="{% url 'cancel_order' order.order_number %}"
+                onsubmit="return confirm('Are you sure you want to cancel this order?');"
+            >
+
+                {% csrf_token %}
+
+                <label for="cancellation_reason">
+                    <strong>Reason for cancellation</strong>
+                </label>
+
+                <textarea
+                    id="cancellation_reason"
+                    name="cancellation_reason"
+                    maxlength="500"
+                    required
+                    placeholder="Please tell us why you want to cancel this order..."
+                ></textarea>
+
+                <button type="submit" class="cancel-button">
+                    Cancel Order
+                </button>
+
+            </form>
+
+        </div>
+
+    {% elif order.status == "Cancelled" %}
+
+        <div class="cancelled-notice">
+            This order has already been cancelled.
+        </div>
+
+    {% endif %}
+
+
+    <!-- PRODUCTS -->
+
+    <div class="detail-card">
+
+        <h2>Products Ordered</h2>
+
+        {% for item in order.items.all %}
+
+            <div class="detail-row">
+                <span>
+                    {{ item.product_name }} × {{ item.quantity }}
+                </span>
+
+                <strong>
+                    ₹{{ item.subtotal|floatformat:2 }}
+                </strong>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- DELIVERY INFORMATION -->
+
+    <div class="detail-card">
+
+        <h2>Delivery Information</h2>
+
+        <p class="address-text">
+            <strong>{{ order.full_name }}</strong><br>
+            {{ order.address }}<br>
+            {{ order.city }}, {{ order.state }} -
+            {{ order.postal_code }}<br>
+            Phone: {{ order.phone }}<br>
+            Email: {{ order.email }}
+        </p>
+
+    </div>
+
+
+    <!-- PAYMENT INFORMATION -->
+
+    <div class="detail-card">
+
+        <h2>Payment Information</h2>
+
+        <div class="detail-row">
+            <span>Payment Method</span>
+            <strong>{{ order.get_payment_method_display }}</strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Payment Status</span>
+            <strong>{{ order.get_payment_status_display }}</strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Subtotal</span>
+            <strong>₹{{ order.subtotal|floatformat:2 }}</strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Delivery Charge</span>
+            <strong>₹{{ order.delivery_charge|floatformat:2 }}</strong>
+        </div>
+
+        <div class="detail-row detail-total">
+            <span>Total Amount</span>
+            <strong>₹{{ order.total_amount|floatformat:2 }}</strong>
+        </div>
+
+    </div>
+
+
+    <!-- NAVIGATION -->
+
+    <div class="detail-actions">
+
+        <a href="{% url 'my_orders' %}" class="secondary">
+            ← Back to My Orders
+        </a>
+
+        <a href="{% url 'home' %}">
+            Continue Shopping
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

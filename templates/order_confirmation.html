@@ -1,0 +1,206 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation | Kobo Goods</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .confirmation-container {
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .confirmation-card {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.07);
+        }
+
+        .success-heading {
+            text-align: center;
+            color: #16834a;
+            margin-bottom: 25px;
+        }
+
+        .success-heading .check {
+            font-size: 55px;
+        }
+
+        .confirmation-card h2 {
+            color: #172337;
+            font-size: 19px;
+            margin: 25px 0 12px;
+        }
+
+        .order-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #172337;
+        }
+
+        .order-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .order-actions a {
+            display: inline-block;
+            padding: 13px 20px;
+            background: #ff9900;
+            color: #172337;
+            border-radius: 5px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .order-actions a.secondary {
+            background: #172337;
+            color: white;
+        }
+
+        /* Confirmation messages */
+
+        .site-messages {
+            max-width: 750px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .message {
+            padding: 14px 18px;
+            border-radius: 7px;
+            background: #eaf7ef;
+            color: #176b3a;
+            border-left: 4px solid #219653;
+            margin-bottom: 10px;
+        }
+
+        .message.error {
+            background: #fff0f0;
+            color: #b42318;
+            border-left-color: #d93025;
+        }
+
+        @media(max-width: 520px) {
+            .confirmation-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+{% if messages %}
+<div class="site-messages">
+    {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="confirmation-container">
+
+    <div class="confirmation-card">
+
+        <div class="success-heading">
+            <div class="check">✓</div>
+            <h1>Order Confirmed!</h1>
+            <p>Thank you for shopping with Kobo Goods.</p>
+        </div>
+
+        <h2>Order Details</h2>
+
+        <div class="order-line">
+            <span>Order ID</span>
+            <strong>{{ order.order_number }}</strong>
+        </div>
+
+        <div class="order-line">
+            <span>Order Date</span>
+            <strong>{{ order.created_at|date:"d M Y, h:i A" }}</strong>
+        </div>
+
+        <div class="order-line">
+            <span>Order Status</span>
+            <strong>{{ order.status }}</strong>
+        </div>
+
+        <div class="order-line">
+            <span>Payment Method</span>
+            <strong>{{ order.get_payment_method_display }}</strong>
+        </div>
+
+        <div class="order-line">
+            <span>Payment Status</span>
+            <strong>{{ order.payment_status }}</strong>
+        </div>
+
+        <h2>Products Ordered</h2>
+
+        {% for item in order.items.all %}
+        <div class="order-line">
+            <span>
+                {{ item.product_name }} × {{ item.quantity }}
+            </span>
+            <strong>₹{{ item.subtotal|floatformat:2 }}</strong>
+        </div>
+        {% endfor %}
+
+        <h2>Delivery Address</h2>
+
+        <p>
+            {{ order.full_name }}<br>
+            {{ order.address }}<br>
+            {{ order.city }}, {{ order.state }} - {{ order.postal_code }}<br>
+            Phone: {{ order.phone }}
+        </p>
+
+        <h2>Payment Summary</h2>
+
+        <div class="order-line">
+            <span>Subtotal</span>
+            <strong>₹{{ order.subtotal|floatformat:2 }}</strong>
+        </div>
+
+        <div class="order-line">
+            <span>Delivery</span>
+            <strong>₹{{ order.delivery_charge|floatformat:2 }}</strong>
+        </div>
+
+        <div class="order-line order-total">
+            <span>Total</span>
+            <strong>₹{{ order.total_amount|floatformat:2 }}</strong>
+        </div>
+
+        <div class="order-actions">
+            <a href="{% url 'home' %}">Continue Shopping</a>
+            <a href="{% url 'my_orders' %}" class="secondary">
+                My Orders
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

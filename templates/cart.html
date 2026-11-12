@@ -1,0 +1,378 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | Kobo Goods</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .cart-page {
+            max-width: 1200px;
+            margin: 45px auto;
+            padding: 0 20px;
+        }
+
+        .cart-title {
+            color: #172337;
+            margin-bottom: 25px;
+            font-size: 30px;
+        }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 1fr 330px;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .cart-items,
+        .cart-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, .06);
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-image {
+            width: 115px;
+            height: 110px;
+            object-fit: contain;
+            background: #f5f6f8;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .cart-product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cart-product-info h3 {
+            color: #172337;
+            margin-bottom: 8px;
+        }
+
+        .cart-product-info p {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .cart-price {
+            color: #d66c00 !important;
+            font-weight: bold;
+            font-size: 17px !important;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .quantity-controls form {
+            display: inline-flex;
+        }
+
+        .quantity-controls button {
+            width: 32px;
+            height: 32px;
+            background: #f1f3f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .quantity-number {
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .remove-button {
+            border: none;
+            background: transparent;
+            color: #d93025;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
+        .cart-summary h2 {
+            color: #172337;
+            margin-bottom: 22px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 16px 0;
+            color: #555;
+        }
+
+        .summary-total {
+            border-top: 1px solid #ddd;
+            padding-top: 18px;
+            font-size: 19px;
+            font-weight: bold;
+            color: #172337;
+        }
+
+        .checkout-button {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: #ff9900;
+            color: #172337;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: not-allowed;
+            opacity: .65;
+        }
+
+        .continue-shopping {
+            display: inline-block;
+            margin-top: 20px;
+            color: #172337;
+            font-weight: bold;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 65px 20px;
+        }
+
+        .empty-cart h2 {
+            color: #172337;
+            margin-bottom: 12px;
+        }
+
+        .empty-cart p {
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .cart-message {
+            padding: 12px;
+            background: #fff4df;
+            color: #765000;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        @media(max-width: 800px) {
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width: 480px) {
+            .cart-item {
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .cart-image {
+                width: 85px;
+                height: 90px;
+            }
+
+            .cart-items,
+            .cart-summary {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="announcement">
+        Free delivery on orders above ₹999 | Welcome to Kobo Goods!
+    </div>
+
+    <header class="main-header">
+
+        <div class="logo">
+            <a href="/">KOBO<span>GOODS</span></a>
+        </div>
+
+        <div class="header-links">
+            <a href="/">Home</a>
+            <a href="{% url 'profile' %}">My Account</a>
+            <a href="{% url 'cart' %}">Cart ({{ cart_count }})</a>
+        </div>
+
+    </header>
+
+    <main class="cart-page">
+
+        <h1 class="cart-title">Your Shopping Cart</h1>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="cart-message">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        {% if cart_items %}
+
+        <div class="cart-layout">
+
+            <section class="cart-items">
+
+                {% for item in cart_items %}
+
+                <div class="cart-item">
+
+                    {% if item.product.image %}
+                    <img class="cart-image" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                    <div class="cart-image"></div>
+                    {% endif %}
+
+                    <div class="cart-product-info">
+
+                        <h3>{{ item.product.name }}</h3>
+
+                        <p>{{ item.product.get_category_display }}</p>
+
+                        <p class="cart-price">
+                            ₹{{ item.product.price }}
+                        </p>
+
+                        <div class="quantity-controls">
+
+                            <form method="POST" action="{% url 'update_cart' item.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" aria-label="Decrease quantity">−</button>
+                            </form>
+
+                            <span class="quantity-number">
+                                {{ item.quantity }}
+                            </span>
+
+                            <form method="POST" action="{% url 'update_cart' item.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" aria-label="Increase quantity">+</button>
+                            </form>
+
+                        </div>
+
+                        <p>
+                            Item total: ₹{{ item.subtotal }}
+                        </p>
+
+                        <form method="POST" action="{% url 'remove_from_cart' item.id %}">
+                            {% csrf_token %}
+                            <button class="remove-button" type="submit">
+                                Remove product
+                            </button>
+                        </form>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+                <a href="/" class="continue-shopping">
+                    ← Continue Shopping
+                </a>
+
+            </section>
+
+            <aside class="cart-summary">
+
+                <h2>Order Summary</h2>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <strong>₹{{ subtotal }}</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Delivery</span>
+
+                    {% if delivery_charge == 0 %}
+                    <strong style="color:green">FREE</strong>
+                    {% else %}
+                    <strong>₹{{ delivery_charge }}</strong>
+                    {% endif %}
+                </div>
+
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <strong>₹{{ total }}</strong>
+                </div>
+
+                <p style="font-size:12px;color:#777;margin-top:12px;">
+                    Free delivery on orders above ₹999.
+                </p>
+
+                {% if user.is_authenticated %}
+                <a href="{% url 'checkout' %}" class="checkout-btn">
+                    Proceed to Checkout →
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}?next=/checkout/" class="checkout-btn">
+                    Login to Checkout →
+                </a>
+                {% endif %}
+
+                <a href="/" class="continue-shopping">
+                    Continue Shopping
+                </a>
+
+            </aside>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-cart">
+            <h2>Your cart is empty!</h2>
+
+            <p>
+                Looks like you haven't added any products yet.
+                Explore Kobo Goods and find something you love.
+            </p>
+
+            <a href="/" class="shop-btn">
+                Start Shopping
+            </a>
+        </div>
+
+        {% endif %}
+
+    </main>
+
+    <footer class="footer">
+        <div class="copyright">
+            © 2026 Kobo Goods. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+
+</html>

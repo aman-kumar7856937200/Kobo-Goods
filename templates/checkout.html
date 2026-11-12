@@ -1,0 +1,330 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Kobo Goods</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .checkout-container {
+            max-width: 1150px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .checkout-container h1 {
+            color: #172337;
+            margin-bottom: 25px;
+        }
+
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .checkout-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,.07);
+            margin-bottom: 20px;
+        }
+
+        .checkout-card h2 {
+            color: #172337;
+            font-size: 21px;
+            margin-bottom: 20px;
+        }
+
+        .checkout-form label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 15px 0 7px;
+        }
+
+        .checkout-form input,
+        .checkout-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .checkout-form textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .payment-option {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+
+        .payment-option input {
+            width: auto;
+        }
+
+        .payment-option span {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .checkout-product {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 13px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .checkout-product strong {
+            color: #172337;
+            white-space: nowrap;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .summary-total {
+            border-top: 1px solid #ddd;
+            padding-top: 17px;
+            font-size: 19px;
+            font-weight: bold;
+            color: #172337;
+        }
+
+        .place-order-btn {
+            width: 100%;
+            border: none;
+            background: #ff9900;
+            color: #172337;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .place-order-btn:hover {
+            background: #e68a00;
+        }
+
+        .checkout-back {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #172337;
+        }
+
+        @media(max-width: 760px) {
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="checkout-container">
+
+    <a href="{% url 'cart' %}" class="checkout-back">
+        ← Back to Cart
+    </a>
+
+    <h1>Secure Checkout</h1>
+
+    <form method="POST" class="checkout-form">
+        {% csrf_token %}
+
+        <div class="checkout-layout">
+
+            <div>
+
+                <div class="checkout-card">
+                    <h2>1. Delivery Information</h2>
+
+                    <label>Full Name</label>
+                    <input
+                        type="text"
+                        name="full_name"
+                        maxlength="150"
+                        value="{{ form_data.full_name|default:user.get_full_name }}"
+                        required
+                    >
+
+                    <label>Email Address</label>
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ form_data.email|default:user.email }}"
+                        required
+                    >
+
+                    <label>Phone Number</label>
+                    <input
+                        type="tel"
+                        name="phone"
+                        maxlength="10"
+                        pattern="[0-9]{10}"
+                        value="{{ form_data.phone|default:'' }}"
+                        placeholder="10-digit mobile number"
+                        required
+                    >
+
+                    <label>Complete Delivery Address</label>
+                    <textarea
+                        name="address"
+                        placeholder="House number, street, locality..."
+                        required
+                    >{{ form_data.address|default:'' }}</textarea>
+
+                    <div class="form-row">
+                        <div>
+                            <label>City</label>
+                            <input
+                                type="text"
+                                name="city"
+                                value="{{ form_data.city|default:'' }}"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label>State</label>
+                            <input
+                                type="text"
+                                name="state"
+                                value="{{ form_data.state|default:'' }}"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <label>PIN Code</label>
+                    <input
+                        type="text"
+                        name="postal_code"
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        value="{{ form_data.postal_code|default:'' }}"
+                        placeholder="6-digit PIN code"
+                        required
+                    >
+                </div>
+
+                <div class="checkout-card">
+                    <h2>2. Select Payment Method</h2>
+
+                    <label class="payment-option">
+                        <input
+                            type="radio"
+                            name="payment_method"
+                            value="Demo Payment"
+                            {% if form_data.payment_method != "Cash on Delivery" %}checked{% endif %}
+                        >
+                        <span>💳 Demo Online Payment</span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input
+                            type="radio"
+                            name="payment_method"
+                            value="Cash on Delivery"
+                            {% if form_data.payment_method == "Cash on Delivery" %}checked{% endif %}
+                        >
+                        <span>💵 Cash on Delivery</span>
+                    </label>
+
+                    <p style="font-size:12px;color:#777;margin-top:15px;">
+                        Demo payment is for project demonstration only.
+                        No real money will be charged.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="checkout-card">
+
+                <h2>3. Order Summary</h2>
+
+                {% for item in cart_items %}
+                    <div class="checkout-product">
+                        <span>
+                            {{ item.product.name }}
+                            × {{ item.quantity }}
+                        </span>
+
+                        <strong>₹{{ item.subtotal|floatformat:2 }}</strong>
+                    </div>
+                {% endfor %}
+
+                <div class="summary-line">
+                    <span>Subtotal</span>
+                    <strong>₹{{ subtotal|floatformat:2 }}</strong>
+                </div>
+
+                <div class="summary-line">
+                    <span>Delivery Charge</span>
+                    <strong>
+                        {% if delivery_charge == 0 %}
+                            FREE
+                        {% else %}
+                            ₹{{ delivery_charge|floatformat:2 }}
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="summary-line summary-total">
+                    <span>Total</span>
+                    <strong>₹{{ total|floatformat:2 }}</strong>
+                </div>
+
+                <button type="submit" class="place-order-btn">
+                    Continue to Place Order
+                </button>
+
+                <p style="font-size:12px;color:#777;text-align:center;margin-top:15px;">
+                    🔒 Your order information is submitted securely.
+                </p>
+
+            </div>
+
+        </div>
+    </form>
+
+</div>
+
+</body>
+</html>

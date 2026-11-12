@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account | Kobo Goods</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f5f8;
+            margin: 0;
+            padding: 30px 15px;
+        }
+
+        .profile-card {
+            max-width: 550px;
+            margin: 50px auto;
+            padding: 35px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,.08);
+        }
+
+        h1 { color: #172337; }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+            color: #172337;
+        }
+
+        .logo span { color: #ff9900; }
+
+        .detail {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logout-btn {
+            background: #d9534f;
+            color: white;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 22px;
+            color: #172337;
+        }
+
+        .messages {
+            color: #256b35;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="profile-card">
+
+        <div class="logo">KOBO<span>GOODS</span></div>
+
+        <h1>My Account</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="messages">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <div class="detail">
+            <strong>Username:</strong> {{ request.user.username }}
+        </div>
+
+        <div class="detail">
+            <strong>Email:</strong>
+            {{ request.user.email|default:"Not provided" }}
+        </div>
+
+        <div class="detail">
+            <strong>Account Status:</strong> Active
+        </div>
+
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">
+                Logout
+            </button>
+        </form>
+
+        <a href="{% url 'home' %}" class="home-link">
+            ← Continue Shopping
+        </a>
+
+    </div>
+</body>
+</html>
