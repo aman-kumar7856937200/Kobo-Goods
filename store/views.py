@@ -152,16 +152,26 @@ def record_order_status(order, status, note=""):
 # HOME PAGE
 # ==========================================
 
-def home(request):
 
-    products = Product.objects.filter(
-        is_featured=True
-    )
+def home(request):
+    products = Product.objects.filter(is_featured=True)
+
+    wishlist_product_ids = set()
+
+    if request.user.is_authenticated:
+        wishlist_product_ids = set(
+            WishlistItem.objects.filter(
+                user=request.user
+            ).values_list("product_id", flat=True)
+        )
 
     return render(request, "home.html", {
         "products": products,
         "cart_count": get_cart_count(request),
+        "wishlist_product_ids": wishlist_product_ids,
     })
+
+
 
 
 # ==========================================
@@ -1392,3 +1402,26 @@ def move_to_cart(request, item_id):
     )
 
     return redirect("cart")
+
+
+@login_required(login_url="login")
+@require_POST
+def toggle_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    wishlist_item = WishlistItem.objects.filter(
+        user=request.user,
+        product=product
+    ).first()
+
+    if wishlist_item:
+        wishlist_item.delete()
+        messages.success(request, "Product removed from your wishlist.")
+    else:
+        WishlistItem.objects.create(
+            user=request.user,
+            product=product
+        )
+        messages.success(request, "Product added to your wishlist.")
+
+    return redirect("home")

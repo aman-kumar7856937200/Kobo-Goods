@@ -1,7 +1,7 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,6 +95,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="announcement">
@@ -108,8 +109,7 @@
         </div>
 
         <div class="search-box">
-            <input type="text" id="searchInput"
-                   placeholder="Search electronics, gadgets and more...">
+            <input type="text" id="searchInput" placeholder="Search electronics, gadgets and more...">
             <button id="searchButton">Search</button>
         </div>
 
@@ -118,36 +118,36 @@
             <details class="account-dropdown">
                 <summary>
                     {% if user.is_authenticated %}
-                        My Account
+                    My Account
                     {% else %}
-                        Account
+                    Account
                     {% endif %}
                 </summary>
 
                 <div class="account-menu">
                     {% if user.is_authenticated %}
 
-                        <div class="account-menu-title">
-                            <span class="greeting-label">Hello,</span>
-                            <strong>{{ user.username }}!</strong>
-                        </div>
+                    <div class="account-menu-title">
+                        <span class="greeting-label">Hello,</span>
+                        <strong>{{ user.username }}!</strong>
+                    </div>
 
-                        <a href="{% url 'profile' %}">👤 My Profile</a>
-                        <a href="{% url 'my_orders' %}">📦 My Orders</a>
+                    <a href="{% url 'profile' %}">👤 My Profile</a>
+                    <a href="{% url 'my_orders' %}">📦 My Orders</a>
 
-                        <form method="POST" action="{% url 'logout' %}">
-                            {% csrf_token %}
-                            <button type="submit">↪ Logout</button>
-                        </form>
+                    <form method="POST" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit">↪ Logout</button>
+                    </form>
 
                     {% else %}
 
-                        <div class="account-menu-title">
-                            Welcome to Kobo Goods!
-                        </div>
+                    <div class="account-menu-title">
+                        Welcome to Kobo Goods!
+                    </div>
 
-                        <a href="{% url 'login' %}">🔐 Customer Login</a>
-                        <a href="{% url 'register' %}">✚ Create Account</a>
+                    <a href="{% url 'login' %}">🔐 Customer Login</a>
+                    <a href="{% url 'register' %}">✚ Create Account</a>
 
                     {% endif %}
                 </div>
@@ -156,9 +156,9 @@
             <a href="#products">Products</a>
 
             {% if user.is_authenticated %}
-                <a href="{% url 'wishlist' %}" class="wishlist-header-link">
-                    ♥ Wishlist
-                </a>
+            <a href="{% url 'wishlist' %}" class="wishlist-header-link">
+                ♥ Wishlist
+            </a>
             {% endif %}
 
             <a href="{% url 'cart' %}">
@@ -178,14 +178,14 @@
     </nav>
 
     {% if messages %}
-        <div class="site-messages">
-            {% for message in messages %}
-                <p class="message {{ message.tags }}">
-                    <span class="message-icon">✓</span>
-                    {{ message }}
-                </p>
-            {% endfor %}
-        </div>
+    <div class="site-messages">
+        {% for message in messages %}
+        <p class="message {{ message.tags }}">
+            <span class="message-icon">✓</span>
+            {{ message }}
+        </p>
+        {% endfor %}
+    </div>
     {% endif %}
 
     <section class="hero">
@@ -197,9 +197,7 @@
         </div>
 
         <div class="hero-image">
-            <img
-                src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=900"
-                alt="Electronics and gadgets">
+            <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=900" alt="Electronics and gadgets">
         </div>
     </section>
 
@@ -252,102 +250,106 @@
 
             {% for product in products %}
 
-                <div class="product-card" data-name="{{ product.name|lower }}">
+            <div class="product-card" data-name="{{ product.name|lower }}">
 
-                    <div class="product-image">
+                <div class="product-image">
 
-                        {% if product.badge %}
-                            <span class="product-badge {% if product.badge == 'NEW' %}new-badge{% endif %}">
-                                {{ product.get_badge_display }}
-                            </span>
-                        {% endif %}
+                    {% if product.badge %}
+                    <span class="product-badge {% if product.badge == 'NEW' %}new-badge{% endif %}">
+                        {{ product.get_badge_display }}
+                    </span>
+                    {% endif %}
 
-                        <form method="POST"
-                              action="{% url 'add_to_wishlist' product.id %}"
-                              class="wishlist-form">
-                            {% csrf_token %}
-                            <button type="submit"
-                                    class="wishlist-heart"
-                                    aria-label="Add {{ product.name }} to wishlist"
-                                    title="Add to Wishlist">
-                                ♥
-                            </button>
-                        </form>
 
-                        <a href="{% url 'product_detail' product.id %}">
-                            {% if product.image %}
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+
+                    <form method="POST" action="{% url 'toggle_wishlist' product.id %}" class="wishlist-form">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="wishlist-heart {% if product.id in wishlist_product_ids %}saved{% endif %}"
+                            aria-label="{% if product.id in wishlist_product_ids %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}"
+                            title="{% if product.id in wishlist_product_ids %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}">
+                            {% if product.id in wishlist_product_ids %}
+                            ♥
                             {% else %}
-                                <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500" alt="{{ product.name }}">
+                            ♡
                             {% endif %}
-                        </a>
+                        </button>
+                    </form>
 
-                    </div>
 
-                    <div class="product-info">
 
-                        <p class="product-category">
-                            {{ product.get_category_display }}
-                        </p>
-
-                        <h3>
-                            <a href="{% url 'product_detail' product.id %}">
-                                {{ product.name }}
-                            </a>
-                        </h3>
-
-                        {% if product.rating > 0 %}
-                            <p class="rating">
-                                ⭐ {{ product.rating }}/5
-                                <span>({{ product.review_count }} reviews)</span>
-                            </p>
+                    <a href="{% url 'product_detail' product.id %}">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
                         {% else %}
-                            <p class="product-category">No reviews yet</p>
+                        <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500"
+                            alt="{{ product.name }}">
                         {% endif %}
+                    </a>
 
-                        <div class="price-row">
-                            <span class="price">₹{{ product.price }}</span>
-
-                            {% if product.discount_percentage > 0 %}
-                                <span class="old-price">₹{{ product.original_price }}</span>
-                                <span class="discount">{{ product.discount_percentage }}% OFF</span>
-                            {% endif %}
-                        </div>
-
-                        <a
-                            href="{% url 'product_detail' product.id %}"
-                            class="product-detail-link"
-                        >
-                            View Details & Reviews →
-                        </a>
-
-                        {% if product.stock > 0 %}
-
-                            <form method="POST" action="{% url 'add_to_cart' product.id %}">
-                                {% csrf_token %}
-
-                                <button type="submit" class="add-cart">
-                                    Add to Cart
-                                </button>
-                            </form>
-
-                        {% else %}
-
-                            <button class="add-cart" disabled>
-                                Out of Stock
-                            </button>
-
-                        {% endif %}
-
-                    </div>
                 </div>
+
+                <div class="product-info">
+
+                    <p class="product-category">
+                        {{ product.get_category_display }}
+                    </p>
+
+                    <h3>
+                        <a href="{% url 'product_detail' product.id %}">
+                            {{ product.name }}
+                        </a>
+                    </h3>
+
+                    {% if product.rating > 0 %}
+                    <p class="rating">
+                        ⭐ {{ product.rating }}/5
+                        <span>({{ product.review_count }} reviews)</span>
+                    </p>
+                    {% else %}
+                    <p class="product-category">No reviews yet</p>
+                    {% endif %}
+
+                    <div class="price-row">
+                        <span class="price">₹{{ product.price }}</span>
+
+                        {% if product.discount_percentage > 0 %}
+                        <span class="old-price">₹{{ product.original_price }}</span>
+                        <span class="discount">{{ product.discount_percentage }}% OFF</span>
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'product_detail' product.id %}" class="product-detail-link">
+                        View Details & Reviews →
+                    </a>
+
+                    {% if product.stock > 0 %}
+
+                    <form method="POST" action="{% url 'add_to_cart' product.id %}">
+                        {% csrf_token %}
+
+                        <button type="submit" class="add-cart">
+                            Add to Cart
+                        </button>
+                    </form>
+
+                    {% else %}
+
+                    <button class="add-cart" disabled>
+                        Out of Stock
+                    </button>
+
+                    {% endif %}
+
+                </div>
+            </div>
 
             {% empty %}
 
-                <div class="empty-products">
-                    <h3>No products available yet.</h3>
-                    <p>Products added through Django Admin will appear here.</p>
-                </div>
+            <div class="empty-products">
+                <h3>No products available yet.</h3>
+                <p>Products added through Django Admin will appear here.</p>
+            </div>
 
             {% endfor %}
 
@@ -377,7 +379,7 @@
                 <a href="#categories">Categories</a>
                 <a href="#products">Products</a>
                 {% if user.is_authenticated %}
-                    <a href="{% url 'wishlist' %}">My Wishlist</a>
+                <a href="{% url 'wishlist' %}">My Wishlist</a>
                 {% endif %}
             </div>
 
@@ -399,4 +401,5 @@
     <script src="{% static 'js/script.js' %}"></script>
 
 </body>
+
 </html>

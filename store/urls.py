@@ -69,6 +69,14 @@ urlpatterns = [
         name="move_to_cart"
     ),
 
+
+    path(
+        "wishlist/toggle/<int:product_id>/", 
+        views.toggle_wishlist, 
+        name="toggle_wishlist"
+    ),
+
+
     # ======================================
     # SHOPPING CART
     # ======================================
