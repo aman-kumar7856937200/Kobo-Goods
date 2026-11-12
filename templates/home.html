@@ -22,6 +22,10 @@
             text-decoration: underline;
         }
 
+        .product-image {
+            position: relative;
+        }
+
         .product-image a {
             display: block;
         }
@@ -33,6 +37,61 @@
 
         .product-info h3 a:hover {
             color: #e47911;
+        }
+
+        .wishlist-form {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 5;
+        }
+
+        .wishlist-heart {
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #64748b;
+            font-size: 23px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.25s ease;
+        }
+
+        .wishlist-heart:hover {
+            color: #e63946;
+            transform: scale(1.12);
+        }
+
+        .wishlist-heart.saved {
+            color: #e63946;
+        }
+
+        .wishlist-heart:active {
+            transform: scale(0.9);
+        }
+
+        .wishlist-header-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .wishlist-header-link:hover {
+            color: #ff9900;
+        }
+
+        @media (max-width: 600px) {
+            .wishlist-heart {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -96,6 +155,12 @@
 
             <a href="#products">Products</a>
 
+            {% if user.is_authenticated %}
+                <a href="{% url 'wishlist' %}" class="wishlist-header-link">
+                    ♥ Wishlist
+                </a>
+            {% endif %}
+
             <a href="{% url 'cart' %}">
                 Cart (<span id="cartCount">{{ cart_count }}</span>)
             </a>
@@ -123,8 +188,6 @@
         </div>
     {% endif %}
 
-    <!-- HERO SECTION -->
-
     <section class="hero">
         <div class="hero-content">
             <p class="hero-tag">UPGRADE YOUR TECH</p>
@@ -140,16 +203,12 @@
         </div>
     </section>
 
-    <!-- BENEFITS SECTION -->
-
     <section class="benefits">
         <div>🚚 <strong>Free Delivery</strong><br>On orders above ₹999</div>
         <div>🔒 <strong>Secure Shopping</strong><br>Safe checkout experience</div>
         <div>⭐ <strong>Quality Products</strong><br>Technology you can trust</div>
         <div>💬 <strong>Customer Support</strong><br>We're here to help</div>
     </section>
-
-    <!-- CATEGORY SECTION -->
 
     <section class="section" id="categories">
         <div class="section-heading">
@@ -182,8 +241,6 @@
         </div>
     </section>
 
-    <!-- FEATURED PRODUCTS SECTION -->
-
     <section class="section products-section" id="products">
 
         <div class="section-heading">
@@ -204,6 +261,18 @@
                                 {{ product.get_badge_display }}
                             </span>
                         {% endif %}
+
+                        <form method="POST"
+                              action="{% url 'add_to_wishlist' product.id %}"
+                              class="wishlist-form">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="wishlist-heart"
+                                    aria-label="Add {{ product.name }} to wishlist"
+                                    title="Add to Wishlist">
+                                ♥
+                            </button>
+                        </form>
 
                         <a href="{% url 'product_detail' product.id %}">
                             {% if product.image %}
@@ -245,16 +314,12 @@
                             {% endif %}
                         </div>
 
-                        <!-- PRODUCT DETAILS LINK -->
-
                         <a
                             href="{% url 'product_detail' product.id %}"
                             class="product-detail-link"
                         >
                             View Details & Reviews →
                         </a>
-
-                        <!-- ADD TO CART -->
 
                         {% if product.stock > 0 %}
 
@@ -289,8 +354,6 @@
         </div>
     </section>
 
-    <!-- PROMO BANNER -->
-
     <section class="promo-banner">
         <div>
             <h2>Technology Made Affordable.</h2>
@@ -298,8 +361,6 @@
             <a href="#products" class="shop-btn">Explore Products</a>
         </div>
     </section>
-
-    <!-- FOOTER -->
 
     <footer class="footer">
 
@@ -315,6 +376,9 @@
                 <a href="/">Home</a>
                 <a href="#categories">Categories</a>
                 <a href="#products">Products</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'wishlist' %}">My Wishlist</a>
+                {% endif %}
             </div>
 
             <div>

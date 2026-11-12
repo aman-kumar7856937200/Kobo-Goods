@@ -1,0 +1,343 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Wishlist | Kobo Goods</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .wishlist-container {
+            max-width: 1150px;
+            margin: 40px auto;
+            padding: 0 20px;
+            min-height: 450px;
+        }
+
+        .wishlist-heading {
+            margin-bottom: 25px;
+        }
+
+        .wishlist-heading h1 {
+            font-size: 30px;
+            color: #131921;
+            margin-bottom: 8px;
+        }
+
+        .wishlist-heading p {
+            color: #666;
+        }
+
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 25px;
+        }
+
+        .wishlist-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .wishlist-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 5px 18px rgba(0,0,0,0.09);
+        }
+
+        .wishlist-image {
+            height: 220px;
+            padding: 15px;
+            background: #fff;
+        }
+
+        .wishlist-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .wishlist-info {
+            padding: 18px;
+        }
+
+        .wishlist-info h3 {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+
+        .wishlist-info h3 a {
+            color: #222;
+            text-decoration: none;
+        }
+
+        .wishlist-info h3 a:hover {
+            color: #e47911;
+        }
+
+        .wishlist-price {
+            font-size: 21px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .wishlist-stock {
+            font-size: 13px;
+            color: #16803c;
+            margin-bottom: 15px;
+        }
+
+        .wishlist-stock.out {
+            color: #dc2626;
+        }
+
+        .wishlist-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .wishlist-actions button {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .move-btn {
+            background: #ff9900;
+            color: #131921;
+        }
+
+        .move-btn:hover {
+            background: #e68a00;
+        }
+
+        .remove-btn {
+            background: #f1f1f1;
+            color: #dc2626;
+        }
+
+        .remove-btn:hover {
+            background: #fee2e2;
+        }
+
+        .empty-wishlist {
+            background: white;
+            text-align: center;
+            padding: 65px 20px;
+            border-radius: 10px;
+        }
+
+        .empty-wishlist .heart {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .empty-wishlist h2 {
+            margin-bottom: 10px;
+        }
+
+        .empty-wishlist p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .shop-now {
+            display: inline-block;
+            background: #ff9900;
+            color: #131921;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .site-messages {
+            max-width: 1150px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .site-messages p {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+
+        @media(max-width: 600px) {
+            .wishlist-heading h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="main-header">
+
+        <div class="logo">
+            <a href="/">KOBO<span>GOODS</span></a>
+        </div>
+
+        <div class="header-links">
+            <a href="{% url 'home' %}">Home</a>
+
+            <a href="{% url 'cart' %}">
+                Cart ({{ cart_count }})
+            </a>
+
+            <a href="{% url 'my_orders' %}">
+                My Orders
+            </a>
+
+            <a href="{% url 'profile' %}">
+                My Account
+            </a>
+        </div>
+
+    </header>
+
+    {% if messages %}
+        <div class="site-messages">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main class="wishlist-container">
+
+        <div class="wishlist-heading">
+            <h1>❤️ My Wishlist</h1>
+            <p>Your favourite products, saved in one place.</p>
+        </div>
+
+        {% if wishlist_items %}
+
+            <div class="wishlist-grid">
+
+                {% for item in wishlist_items %}
+
+                    <div class="wishlist-card">
+
+                        <a href="{% url 'product_detail' item.product.id %}">
+                            <div class="wishlist-image">
+
+                                {% if item.product.image %}
+                                    <img
+                                        src="{{ item.product.image.url }}"
+                                        alt="{{ item.product.name }}"
+                                    >
+                                {% else %}
+                                    <img
+                                        src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500"
+                                        alt="{{ item.product.name }}"
+                                    >
+                                {% endif %}
+
+                            </div>
+                        </a>
+
+                        <div class="wishlist-info">
+
+                            <h3>
+                                <a href="{% url 'product_detail' item.product.id %}">
+                                    {{ item.product.name }}
+                                </a>
+                            </h3>
+
+                            <div class="wishlist-price">
+                                ₹{{ item.product.price }}
+                            </div>
+
+                            {% if item.product.stock > 0 %}
+                                <p class="wishlist-stock">
+                                    In Stock
+                                </p>
+                            {% else %}
+                                <p class="wishlist-stock out">
+                                    Out of Stock
+                                </p>
+                            {% endif %}
+
+                            <div class="wishlist-actions">
+
+                                {% if item.product.stock > 0 %}
+
+                                    <form
+                                        method="POST"
+                                        action="{% url 'move_to_cart' item.id %}"
+                                    >
+                                        {% csrf_token %}
+
+                                        <button class="move-btn" type="submit">
+                                            Move to Cart
+                                        </button>
+                                    </form>
+
+                                {% endif %}
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'remove_from_wishlist' item.id %}"
+                                >
+                                    {% csrf_token %}
+
+                                    <button class="remove-btn" type="submit">
+                                        Remove from Wishlist
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-wishlist">
+
+                <div class="heart">💔</div>
+
+                <h2>Your Wishlist is Empty</h2>
+
+                <p>
+                    You haven't saved any products yet.
+                    Explore Kobo Goods and save your favourite gadgets!
+                </p>
+
+                <a href="{% url 'home' %}" class="shop-now">
+                    Explore Products
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+    <footer class="footer">
+        <div class="copyright">
+            © 2026 Kobo Goods. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>

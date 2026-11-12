@@ -28,14 +28,20 @@ class Product(models.Model):
     ]
 
     name = models.CharField(max_length=200)
+
     category = models.CharField(
         max_length=50,
         choices=CATEGORY_CHOICES,
         default="Other"
     )
+
     description = models.TextField(blank=True)
 
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
     original_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -55,6 +61,7 @@ class Product(models.Model):
         decimal_places=1,
         default=0
     )
+
     review_count = models.PositiveIntegerField(default=0)
 
     badge = models.CharField(
@@ -64,6 +71,7 @@ class Product(models.Model):
     )
 
     is_featured = models.BooleanField(default=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -74,11 +82,14 @@ class Product(models.Model):
 
     @property
     def discount_percentage(self):
+
         if self.original_price > self.price and self.original_price > 0:
+
             discount = (
                 (self.original_price - self.price)
                 / self.original_price
             ) * 100
+
             return round(discount)
 
         return 0
@@ -103,10 +114,12 @@ class CartItem(models.Model):
     )
 
     quantity = models.PositiveIntegerField(default=1)
+
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-added_at"]
+
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "product"],
@@ -120,6 +133,40 @@ class CartItem(models.Model):
     @property
     def subtotal(self):
         return self.product.price * self.quantity
+
+
+# ==========================================
+# WISHLIST ITEM MODEL
+# ==========================================
+
+class WishlistItem(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="wishlist_items"
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="wishlisted_by"
+    )
+
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-added_at"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "product"],
+                name="unique_user_product_wishlist"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
 
 
 # ==========================================
@@ -163,12 +210,17 @@ class Order(models.Model):
     )
 
     full_name = models.CharField(max_length=150)
+
     email = models.EmailField()
+
     phone = models.CharField(max_length=15)
 
     address = models.TextField()
+
     city = models.CharField(max_length=100)
+
     state = models.CharField(max_length=100)
+
     postal_code = models.CharField(max_length=10)
 
     subtotal = models.DecimalField(
@@ -213,6 +265,7 @@ class Order(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -320,10 +373,12 @@ class ProductReview(models.Model):
     comment = models.TextField(max_length=1000)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
+
         constraints = [
             models.UniqueConstraint(
                 fields=["product", "user"],

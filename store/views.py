@@ -18,6 +18,7 @@ from .models import (
     OrderItem,
     OrderStatusHistory,
     ProductReview,
+    WishlistItem,
 )
 
 
@@ -369,16 +370,17 @@ def cart_view(request):
 # UPDATE CART
 # ==========================================
 
+
+@login_required(login_url="login")
 @require_POST
 def update_cart(request, item_id):
+
+    action = request.POST.get("action")
 
     try:
         quantity = int(request.POST.get("quantity", 1))
     except (ValueError, TypeError):
         quantity = 1
-
-    if quantity <= 0:
-        return redirect("remove_from_cart", item_id=item_id)
 
     if request.user.is_authenticated:
 
@@ -387,6 +389,17 @@ def update_cart(request, item_id):
             id=item_id,
             user=request.user
         )
+
+        if action == "increase":
+            quantity = cart_item.quantity + 1
+
+        elif action == "decrease":
+            quantity = cart_item.quantity - 1
+
+        if quantity <= 0:
+            cart_item.delete()
+            messages.success(request, "Product removed from your cart.")
+            return redirect("cart")
 
         cart_item.quantity = min(
             quantity,
@@ -397,69 +410,88 @@ def update_cart(request, item_id):
 
     else:
 
-        guest_cart = request.session.get(
-            GUEST_CART_KEY,
-            {}
-        )
-
+        guest_cart = request.session.get(GUEST_CART_KEY, {})
         product_id = str(item_id)
 
-        if product_id in guest_cart:
+        if product_id not in guest_cart:
+            messages.error(request, "Product not found in your cart.")
+            return redirect("cart")
 
-            try:
-                product = Product.objects.get(id=item_id)
+        current_quantity = int(guest_cart[product_id])
 
-                guest_cart[product_id] = min(
-                    quantity,
-                    product.stock
-                )
+        if action == "increase":
+            quantity = current_quantity + 1
 
-                request.session[GUEST_CART_KEY] = guest_cart
-                request.session.modified = True
+        elif action == "decrease":
+            quantity = current_quantity - 1
 
-            except Product.DoesNotExist:
-                pass
+        if quantity <= 0:
+            guest_cart.pop(product_id, None)
+            messages.success(request, "Product removed from your cart.")
+        else:
+            product = get_object_or_404(Product, id=item_id)
 
-    messages.success(
-        request,
-        "Your cart has been updated."
-    )
+            guest_cart[product_id] = min(
+                quantity,
+                product.stock
+            )
+
+        request.session[GUEST_CART_KEY] = guest_cart
+        request.session.modified = True
+
+    messages.success(request, "Your cart has been updated.")
 
     return redirect("cart")
+
 
 
 # ==========================================
 # REMOVE FROM CART
 # ==========================================
 
+
+@login_required(login_url="login")
 @require_POST
 def remove_from_cart(request, item_id):
 
+    removed = False
+
+    # Remove from the authenticated user's database cart.
     if request.user.is_authenticated:
 
-        CartItem.objects.filter(
+        deleted_count, _ = CartItem.objects.filter(
             id=item_id,
             user=request.user
         ).delete()
 
-    else:
+        if deleted_count:
+            removed = True
 
-        guest_cart = request.session.get(
-            GUEST_CART_KEY,
-            {}
-        )
+    # Also check the guest session cart.
+    guest_cart = request.session.get(GUEST_CART_KEY, {})
+
+    if str(item_id) in guest_cart:
 
         guest_cart.pop(str(item_id), None)
 
         request.session[GUEST_CART_KEY] = guest_cart
         request.session.modified = True
 
-    messages.success(
-        request,
-        "Product removed from your cart."
-    )
+        removed = True
+
+    if removed:
+        messages.success(
+            request,
+            "Product removed from your cart."
+        )
+    else:
+        messages.warning(
+            request,
+            "This product was not found in your cart."
+        )
 
     return redirect("cart")
+
 
 
 # ==========================================
@@ -1229,3 +1261,134 @@ def delete_product_review_view(request, review_id):
         "product_detail",
         product_id=product.id
     )
+
+# ==========================================
+# WISHLIST PAGE
+# ==========================================
+
+@login_required(login_url="login")
+def wishlist_view(request):
+
+    wishlist_items = WishlistItem.objects.filter(
+        user=request.user
+    ).select_related("product")
+
+    return render(request, "wishlist.html", {
+        "wishlist_items": wishlist_items,
+        "cart_count": get_cart_count(request),
+    })
+
+
+# ==========================================
+# ADD PRODUCT TO WISHLIST
+# ==========================================
+
+@login_required(login_url="login")
+@require_POST
+def add_to_wishlist(request, product_id):
+
+    product = get_object_or_404(
+        Product,
+        id=product_id
+    )
+
+    wishlist_item, created = WishlistItem.objects.get_or_create(
+        user=request.user,
+        product=product
+    )
+
+    if created:
+        messages.success(
+            request,
+            f"{product.name} added to your wishlist!"
+        )
+    else:
+        messages.info(
+            request,
+            f"{product.name} is already in your wishlist."
+        )
+
+    return redirect(
+        request.META.get("HTTP_REFERER", "wishlist")
+    )
+
+
+# ==========================================
+# REMOVE PRODUCT FROM WISHLIST
+# ==========================================
+
+@login_required(login_url="login")
+@require_POST
+def remove_from_wishlist(request, item_id):
+
+    wishlist_item = get_object_or_404(
+        WishlistItem,
+        id=item_id,
+        user=request.user
+    )
+
+    product_name = wishlist_item.product.name
+
+    wishlist_item.delete()
+
+    messages.success(
+        request,
+        f"{product_name} removed from your wishlist."
+    )
+
+    return redirect("wishlist")
+
+
+# ==========================================
+# MOVE WISHLIST PRODUCT TO CART
+# ==========================================
+
+@login_required(login_url="login")
+@require_POST
+def move_to_cart(request, item_id):
+
+    wishlist_item = get_object_or_404(
+        WishlistItem.objects.select_related("product"),
+        id=item_id,
+        user=request.user
+    )
+
+    product = wishlist_item.product
+
+    if product.stock <= 0:
+
+        messages.error(
+            request,
+            f"{product.name} is currently out of stock."
+        )
+
+        return redirect("wishlist")
+
+    with transaction.atomic():
+
+        cart_item, created = CartItem.objects.get_or_create(
+            user=request.user,
+            product=product,
+            defaults={
+                "quantity": 1
+            }
+        )
+
+        if not created:
+
+            cart_item.quantity = min(
+                cart_item.quantity + 1,
+                product.stock
+            )
+
+            cart_item.save()
+
+        wishlist_item.delete()
+
+    messages.success(
+        request,
+        f"{product.name} moved to your shopping cart!"
+
+    )
+
+    return redirect("cart")
